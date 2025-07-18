@@ -7,6 +7,15 @@ from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.base.utils.filters import matches_filters
 from core.download.trailers.batch import batch_download_task
 from core.files_handler import FilesHandler
+import os
+from core.plex_extras import PlexExtras     # path already valid
+
+_PLEX = None
+if os.getenv("RESPECT_PLEX_PASS_TRAILERS", "false").lower() == "true":
+    _PLEX = PlexExtras(
+        url=os.getenv("PLEX_URL", "http://plex:32400"),
+        token=os.getenv("PLEX_TOKEN", ""),
+    )
 
 logger = ModuleLogger("TrailerDownloadTasks")
 
@@ -68,6 +77,15 @@ def _process_media_items(
         if not db_media.monitor:
             skipped_titles["not_monitored"].append(db_media.title)
             continue
+
+        # --- Plex-Pass guard ---
+        if _PLEX and _PLEX.has_trailer(db_media.txdb_id):
+            logger.debug(
+                "Plex Pass already provides trailer for '%s' — skipping",
+                db_media.title,
+            )
+            continue
+        # -----------------------
 
         profile_id = _find_matching_profile_id(db_media, trailer_profiles)
         if not profile_id:

@@ -104,6 +104,39 @@ To change the password, go to `Settings > About > Password` in web interface.
 !!! warning
     Once you change your password, don't forget to remove the `WEBUI_PASSWORD` environment variable from the docker-compose file.
 
+### `PLEX_URL`
+
+- Default is `http://plex:32400`.
+
+URL for your Plex server. This is only required if you want Trailarr to check Plex for existing trailers.
+
+```yaml
+    environment:
+        - PLEX_URL=http://localhost:32400
+```
+
+### `PLEX_TOKEN`
+
+- **Required** when `RESPECT_PLEX_PASS_TRAILERS` is `true`.
+
+Authentication token for your Plex server.
+
+```yaml
+    environment:
+        - PLEX_TOKEN=abc123
+```
+
+### `RESPECT_PLEX_PASS_TRAILERS`
+
+- Default is `false`.
+
+When set to `true`, Trailarr will skip downloading trailers that Plex already provides via Plex Pass.
+
+```yaml
+    environment:
+        - RESPECT_PLEX_PASS_TRAILERS=true
+```
+
 
 ### Example
 
