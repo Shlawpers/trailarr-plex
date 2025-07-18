@@ -14,7 +14,7 @@ COPY ./backend/requirements.txt .
 RUN python -m pip install --no-cache-dir --disable-pip-version-check \
     --upgrade -r /app/requirements.txt
 
-RUN apk add --no-cache ffmpeg
+RUN apt-get update && apt-get install -y ffmpeg
 
 # Install ffmpeg using install_ffmpeg.sh script
 COPY ./scripts/install_ffmpeg.sh /tmp/install_ffmpeg.sh
