@@ -19,6 +19,6 @@ class PlexExtras:
         item = hits[0]
         try:
             return any(e.type == "trailer" for e in item.extras())
-        except Exception as e:          # Plex sometimes 404s on extras()
+        except Exception as e:  # Plex sometimes 404s on extras()
             log.warning("Plex extras lookup failed for %s: %s", tmdb_id, e)
             return False

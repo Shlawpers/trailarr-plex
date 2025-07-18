@@ -16,6 +16,16 @@ from exceptions import (
     FolderPathEmptyError,
 )
 
+import os
+from core.plex_extras import PlexExtras     # path already valid
+
+_PLEX = None
+if os.getenv("RESPECT_PLEX_PASS_TRAILERS", "false").lower() == "true":
+    _PLEX = PlexExtras(
+        url=os.getenv("PLEX_URL", "http://plex:32400"),
+        token=os.getenv("PLEX_TOKEN", ""),
+    )
+
 logger = ModuleLogger("TrailerDownloadTasks")
 
 
@@ -65,6 +75,15 @@ def download_trailer_by_id(
 
     if not FilesHandler.check_folder_exists(media.folder_path):
         raise FolderNotFoundError(folder_path=media.folder_path)
+
+    # --- Plex-Pass guard ---
+    if _PLEX and _PLEX.has_trailer(media.txdb_id):
+        logger.debug(
+            "Plex Pass already provides trailer for '%s' — skipping",
+            media.title,
+        )
+        return f"Plex Pass already provides trailer for '{media.title}'"
+    # -----------------------
 
     if yt_id:
         # If yt_id is provided, always use it,
@@ -132,6 +151,14 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
         except Exception:
             skipped_titles["invalid_media_id"].append(media_id)
             continue
+        # --- Plex-Pass guard ---
+        if _PLEX and _PLEX.has_trailer(db_media.txdb_id):
+            logger.debug(
+                "Plex Pass already provides trailer for '%s' — skipping",
+                db_media.title,
+            )
+            continue
+        # -----------------------
         if db_media.folder_path is None:
             skipped_titles["missing_folder_path"].append(db_media.title)
             continue
