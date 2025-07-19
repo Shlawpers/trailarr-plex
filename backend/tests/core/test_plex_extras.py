@@ -15,12 +15,25 @@ class DummyItem:
         return self._extras
 
 
-class DummyLibrary:
+class DummySection:
     def __init__(self, items):
         self._items = items
 
+    def getGuid(self, guid):
+        if self._items:
+            return self._items[0]
+        raise plex_extras.plex_exc.NotFound
+
     def search(self, **kwargs):
         return self._items
+
+
+class DummyLibrary:
+    def __init__(self, items):
+        self._section = DummySection(items)
+
+    def section(self, name):
+        return self._section
 
 
 class DummyServer:
@@ -54,3 +67,10 @@ def test_has_trailer_tvdb(monkeypatch):
     monkeypatch.setattr(plex_extras, "PlexServer", lambda url, token: server)
     plex = plex_extras.PlexExtras("http://x", "t")
     assert plex.has_trailer("12345", is_movie=False) is True
+
+
+def test_has_trailer_not_found(monkeypatch):
+    server = _make_server([])
+    monkeypatch.setattr(plex_extras, "PlexServer", lambda url, token: server)
+    plex = plex_extras.PlexExtras("http://x", "t")
+    assert plex.has_trailer("42", is_movie=True) is False
