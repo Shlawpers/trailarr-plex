@@ -15,12 +15,23 @@ class DummyItem:
         return self._extras
 
 
-class DummyLibrary:
+class DummySection:
     def __init__(self, items):
         self._items = items
 
+    def getGuid(self, guid):
+        return self._items[0] if self._items else None
+
     def search(self, **kwargs):
         return self._items
+
+
+class DummyLibrary:
+    def __init__(self, items):
+        self._section = DummySection(items)
+
+    def section(self, name):
+        return self._section
 
 
 class DummyServer:

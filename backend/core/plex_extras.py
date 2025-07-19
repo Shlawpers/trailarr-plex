@@ -3,6 +3,7 @@ from plexapi.server import PlexServer
 from plexapi import exceptions as plex_exc
 import logging
 import os
+import urllib.parse as _u
 
 _PLEX = None
 _INIT = False
@@ -33,15 +34,20 @@ class PlexExtras:
             prefix,
             txdb_id,
         )
-        hits = self.server.library.search(guid=f"{prefix}://{txdb_id}")
-        if not hits:
-            alt_prefix = "tvdb" if prefix == "tmdb" else "tmdb"
-            log.debug("No results. Trying %s://%s", alt_prefix, txdb_id)
-            hits = self.server.library.search(guid=f"{alt_prefix}://{txdb_id}")
-            if not hits:
-                log.debug("No Plex items found for %s", txdb_id)
-                return False
-        item = hits[0]
+        section_name = "Movies" if prefix == "tmdb" else "TV Shows"
+        section = self.server.library.section(section_name)
+        guid = f"{prefix}://{txdb_id}"
+        item = section.getGuid(guid)
+        if item is None:
+            item = next(iter(section.search(guid=_u.quote(guid, safe=""))), None)
+        if item is None and prefix in ("tmdb", "tvdb"):
+            alt = "tvdb" if prefix == "tmdb" else "tmdb"
+            guid_alt = f"{alt}://{txdb_id}"
+            item = section.getGuid(guid_alt) or \
+                   next(iter(section.search(guid=_u.quote(guid_alt, safe=""))), None)
+        if not item:
+            log.debug("No Plex items found for %s", txdb_id)
+            return False
         try:
             extras = list(item.extras())
             result = any(
