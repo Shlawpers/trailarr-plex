@@ -2302,7 +2302,11 @@
 <ul>
 <li>Default is <code>false</code>.</li>
 </ul>
-<p>When set to <code>true</code>, Trailarr will skip downloading trailers that Plex already provides via Plex Pass.</p>
+<p>When set to <code>true</code>, Trailarr checks Plex for an existing trailer before every
+download attempt. If Plex already provides a trailer (type <code>clip</code> and subtype
+<code>trailer</code>), Trailarr logs <code>"Skipped trailer download for [title] - Plex Pass already provides trailer."</code>
+and does not download or replace the trailer.
+You can toggle this option from the UI under <strong>Settings &gt; General &gt; Respect Plex Pass</strong>, but a container restart is required for the change to take effect.</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RESPECT_PLEX_PASS_TRAILERS=true</span>
 </span></code></pre></div>
@@ -2346,7 +2350,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="July 18, 2025 20:01:04 UTC">July 18, 2025 20:01:04</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-datetime" title="July 19, 2025 03:25:13 UTC">July 19, 2025 03:25:13</span>
   </span>
 
     
