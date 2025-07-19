@@ -17,14 +17,7 @@ from exceptions import (
 )
 
 import os
-from core.plex_extras import PlexExtras     # path already valid
-
-_PLEX = None
-if os.getenv("RESPECT_PLEX_PASS_TRAILERS", "false").lower() == "true":
-    _PLEX = PlexExtras(
-        url=os.getenv("PLEX_URL", "http://plex:32400"),
-        token=os.getenv("PLEX_TOKEN", ""),
-    )
+from core.plex_extras import get_plex
 
 logger = ModuleLogger("TrailerDownloadTasks")
 
@@ -42,9 +35,7 @@ def _download_trailer(
     return
 
 
-def download_trailer_by_id(
-    media_id: int, profile_id: int, yt_id: str = ""
-) -> str:
+def download_trailer_by_id(media_id: int, profile_id: int, yt_id: str = "") -> str:
     """Download trailer for a media by ID with given profile.
     Schedules a background job to download it. \n
     Args:
@@ -76,8 +67,9 @@ def download_trailer_by_id(
     if not FilesHandler.check_folder_exists(media.folder_path):
         raise FolderNotFoundError(folder_path=media.folder_path)
 
+    plex = get_plex()
     # --- Plex-Pass guard ---
-    if _PLEX and _PLEX.has_trailer(media.txdb_id):
+    if plex and plex.has_trailer(media.txdb_id, media.is_movie):
         logger.info(
             "Skipped trailer download for %s - Plex Pass already provides trailer.",
             media.title,
@@ -151,8 +143,9 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
         except Exception:
             skipped_titles["invalid_media_id"].append(media_id)
             continue
+        plex = get_plex()
         # --- Plex-Pass guard ---
-        if _PLEX and _PLEX.has_trailer(db_media.txdb_id):
+        if plex and plex.has_trailer(db_media.txdb_id, db_media.is_movie):
             logger.info(
                 "Skipped trailer download for %s - Plex Pass already provides trailer.",
                 db_media.title,
@@ -183,9 +176,7 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
             all_titles = "None"
         skip_reason = skip_reason.replace("_", " ")
         # logger.debug(f"Skipped {len(skip_titles)} titles - {skip_reason}")
-        logger.debug(
-            f"Skipped {len(skip_titles)} titles - {skip_reason}: {all_titles}"
-        )
+        logger.debug(f"Skipped {len(skip_titles)} titles - {skip_reason}: {all_titles}")
 
     # Return if no media to download
     if not media_trailer_list:

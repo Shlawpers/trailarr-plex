@@ -3,10 +3,12 @@ import asyncio
 import backend.core.tasks.download_trailers as dl
 import backend.core.download.trailer as trailer
 
+
 class DummyPlex:
     def __init__(self, result: bool):
         self.result = result
-    def has_trailer(self, tmdb_id: str) -> bool:
+
+    def has_trailer(self, txdb_id: str, is_movie: bool | None = None) -> bool:
         return self.result
 
 
@@ -24,8 +26,8 @@ def _setup_common(monkeypatch, plex_result=False):
     monkeypatch.setattr(dl.trailerprofile, "get_trailerprofile", lambda _: profile)
     monkeypatch.setattr(dl.FilesHandler, "check_folder_exists", lambda _: True)
     calls = []
-    monkeypatch.setattr(dl.scheduler, "add_job", lambda *a, **k: calls.append((a,k)))
-    monkeypatch.setattr(dl, "_PLEX", DummyPlex(plex_result))
+    monkeypatch.setattr(dl.scheduler, "add_job", lambda *a, **k: calls.append((a, k)))
+    monkeypatch.setattr(dl, "get_plex", lambda: DummyPlex(plex_result))
     return media, profile, calls
 
 
@@ -59,18 +61,19 @@ def test_direct_download_respects_plex_pass(monkeypatch):
         remove_silence=False,
     )
 
-    monkeypatch.setattr(trailer, "_PLEX", DummyPlex(True))
+    monkeypatch.setattr(trailer, "get_plex", lambda: DummyPlex(True))
 
     def fail(*args, **kwargs):
         raise AssertionError("should not download")
 
     monkeypatch.setattr(trailer.trailer_search, "get_video_id", fail)
     monkeypatch.setattr(trailer, "__update_media_status", lambda *a, **k: None)
-    monkeypatch.setattr(trailer.trailer_file, "move_trailer_to_folder", lambda *a, **k: None)
+    monkeypatch.setattr(
+        trailer.trailer_file, "move_trailer_to_folder", lambda *a, **k: None
+    )
     monkeypatch.setattr(trailer.trailer_file, "verify_download", lambda *a, **k: True)
     monkeypatch.setattr(trailer, "download_video", lambda *a, **k: "f.mp4")
     monkeypatch.setattr(trailer.video_analysis, "remove_silence_at_end", lambda x: x)
 
     result = asyncio.run(trailer.download_trailer(media, profile))
     assert result is True
-
