@@ -35,6 +35,14 @@
         [disabled]="false"
         (onSubmit)="updateSetting('monitor_interval', $event)"
       />
+      <app-options-setting
+        name="Respect Plex Pass"
+        description="Skip download if Plex already provides a trailer."
+        descriptionExtra="Container restart required after toggling."
+        [options]="trueFalseOptions"
+        [selectedOption]="settings()?.respect_plex_pass_trailers"
+        (optionChange)="updateSetting('respect_plex_pass_trailers', $event)"
+      />
     </div>
   </details>
 </section>

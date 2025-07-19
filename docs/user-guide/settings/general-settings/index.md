@@ -20,7 +20,14 @@ Enable this setting to monitor trailers for connections. When enabled, the app w
 Frequency (in minutes) to check for new media in Radarr/Sonarr.
 
 !!! info Restart Required
-    Changing this setting will require a restart of the app (container) to take effect.
+Changing this setting will require a restart of the app (container) to take effect.
+
+### Respect Plex Pass
+
+- Default is `false`
+
+When enabled, Trailarr checks Plex for an existing trailer before attempting a download and skips if one exists.
+You must restart the container after toggling this setting for the change to apply.
 
 
 ## File Settings
