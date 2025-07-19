@@ -8,14 +8,7 @@ from core.base.utils.filters import matches_filters
 from core.download.trailers.batch import batch_download_task
 from core.files_handler import FilesHandler
 import os
-from core.plex_extras import PlexExtras     # path already valid
-
-_PLEX = None
-if os.getenv("RESPECT_PLEX_PASS_TRAILERS", "false").lower() == "true":
-    _PLEX = PlexExtras(
-        url=os.getenv("PLEX_URL", "http://plex:32400"),
-        token=os.getenv("PLEX_TOKEN", ""),
-    )
+from core.plex_extras import get_plex
 
 logger = ModuleLogger("TrailerDownloadTasks")
 
@@ -32,9 +25,7 @@ def _find_matching_profile_id(
     return None
 
 
-def _is_valid_media(
-    db_media: MediaRead, skipped_titles: dict[str, list[str]]
-) -> bool:
+def _is_valid_media(db_media: MediaRead, skipped_titles: dict[str, list[str]]) -> bool:
     """Check if a media item is valid for downloading."""
     if db_media.folder_path is None:
         skipped_titles["missing_folder_path"].append(db_media.title)
@@ -78,8 +69,9 @@ def _process_media_items(
             skipped_titles["not_monitored"].append(db_media.title)
             continue
 
+        plex = get_plex()
         # --- Plex-Pass guard ---
-        if _PLEX and _PLEX.has_trailer(db_media.txdb_id):
+        if plex and plex.has_trailer(db_media.txdb_id, db_media.is_movie):
             logger.info(
                 "Skipped trailer download for %s - Plex Pass already provides trailer.",
                 db_media.title,
@@ -197,8 +189,6 @@ async def download_missing_trailers() -> None:
 
     _log_skipped_titles(skipped_titles, len(db_media_list), _download_count)
 
-    await _download_trailers(
-        profile_map, profile_to_media_map, _download_count
-    )
+    await _download_trailers(profile_map, profile_to_media_map, _download_count)
 
     logger.info("Finished downloading missing trailers.")

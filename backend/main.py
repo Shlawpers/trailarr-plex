@@ -25,6 +25,7 @@ from config.settings import app_settings
 from core.base.database.utils.engine import flush_records_to_db
 from core.tasks import scheduler
 from core.tasks.schedules import schedule_all_tasks
+from core.plex_extras import get_plex
 
 logging = ModuleLogger("Main")
 # from web.routes import web_router
@@ -40,6 +41,11 @@ async def lifespan(app: FastAPI):
     logging.debug("Scheduling tasks")
     schedule_all_tasks()
     scheduler.start()
+    plex = get_plex()
+    if plex:
+        logging.info("Respect Plex Pass: enabled and connected")
+    else:
+        logging.info("Respect Plex Pass: disabled or connection failed")
 
     # Yield to let the app run
     yield
@@ -149,9 +155,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
     try:
         while True:
             data = await websocket.receive_text()
-            await ws_manager.send_personal_message(
-                f"You wrote: {data}", websocket
-            )
+            await ws_manager.send_personal_message(f"You wrote: {data}", websocket)
             await ws_manager.broadcast(f"Client #{client_id} says: {data}")
     except WebSocketDisconnect:
         ws_manager.disconnect(websocket)
@@ -166,22 +170,16 @@ images_dir = os.path.join(app_settings.app_data_dir, "web", "images")
 if not os.path.exists(images_dir):
     logging.debug("Creating images directory")
     os.makedirs(images_dir)
-    trailarr_api.mount(
-        images_dir, StaticFiles(directory=images_dir), name="images"
-    )
+    trailarr_api.mount(images_dir, StaticFiles(directory=images_dir), name="images")
 else:
     logging.debug("Mounting images directory for frontend!")
-    trailarr_api.mount(
-        images_dir, StaticFiles(directory=images_dir), name="images"
-    )
+    trailarr_api.mount(images_dir, StaticFiles(directory=images_dir), name="images")
 
 
 # Mount Frontend 'assets/manifest.json' without authorization
 @trailarr_api.get("/assets/manifest.json", include_in_schema=False)
 async def serve_manifest():
-    file_path = os.path.normpath(
-        os.path.join(static_dir, "assets", "manifest.json")
-    )
+    file_path = os.path.normpath(os.path.join(static_dir, "assets", "manifest.json"))
     if os.path.isfile(file_path):
         # If the path corresponds to a static file, return the file
         return FileResponse(file_path)

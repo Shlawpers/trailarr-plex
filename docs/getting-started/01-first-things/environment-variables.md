@@ -134,6 +134,8 @@ When set to `true`, Trailarr checks Plex for an existing trailer before every
 download attempt. If Plex already provides a trailer (type `clip` and subtype
 `trailer`), Trailarr logs `"Skipped trailer download for [title] - Plex Pass already provides trailer."`
 and does not download or replace the trailer.
+Both movie (TMDb) and series (TVDb) IDs are now supported. Plex is contacted only
+when needed and connection errors are logged instead of crashing the app.
 You can toggle this option from the UI under **Settings > General > Respect Plex Pass**, but a container restart is required for the change to take effect.
 
 ```yaml

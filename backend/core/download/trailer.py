@@ -8,16 +8,10 @@ from core.base.database.models.media import MediaRead, MonitorStatus
 from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.download.video_v2 import download_video
 from core.download import trailer_file, trailer_search, video_analysis
-from core.plex_extras import PlexExtras
+from core.plex_extras import get_plex
 from exceptions import DownloadFailedError
 import os
 
-_PLEX = None
-if os.getenv("RESPECT_PLEX_PASS_TRAILERS", "false").lower() == "true":
-    _PLEX = PlexExtras(
-        url=os.getenv("PLEX_URL", "http://plex:32400"),
-        token=os.getenv("PLEX_TOKEN", ""),
-    )
 
 logger = ModuleLogger("TrailersDownloader")
 
@@ -67,15 +61,12 @@ def __download_and_verify_trailer(
     """Download the trailer and verify it."""
     trailer_url = f"https://www.youtube.com/watch?v={video_id}"
     logger.info(
-        f"Downloading trailer for {media.title} [{media.id}] from"
-        f" {trailer_url}"
+        f"Downloading trailer for {media.title} [{media.id}] from" f" {trailer_url}"
     )
     tmp_output_file = f"/app/tmp/{media.id}-trailer.%(ext)s"
     output_file = download_video(trailer_url, tmp_output_file, profile)
     tmp_output_file = tmp_output_file.replace("%(ext)s", profile.file_format)
-    if not trailer_file.verify_download(
-        tmp_output_file, output_file, media.title
-    ):
+    if not trailer_file.verify_download(tmp_output_file, output_file, media.title):
         raise DownloadFailedError("Trailer verification failed")
     if profile.remove_silence:
         output_file = video_analysis.remove_silence_at_end(output_file)
@@ -101,8 +92,9 @@ async def download_trailer(
     """
     logger.info(f"Downloading trailer for {media.title} [{media.id}]")
 
+    plex = get_plex()
     # --- Plex-Pass guard ---
-    if _PLEX and _PLEX.has_trailer(media.txdb_id):
+    if plex and plex.has_trailer(media.txdb_id, media.is_movie):
         logger.info(
             "Skipped trailer download for %s - Plex Pass already provides trailer.",
             media.title,
@@ -144,15 +136,9 @@ async def download_trailer(
         logger.error(f"Failed to download trailer: {e}")
         __update_media_status(media, MonitorStatus.MISSING)
         if retry_count > 0:
-            logger.info(
-                f"Retrying download for {media.title}... ({3 - retry_count}/3)"
-            )
+            logger.info(f"Retrying download for {media.title}... ({3 - retry_count}/3)")
             media.youtube_trailer_id = None
             if video_id:
                 exclude.append(video_id)
-            return await download_trailer(
-                media, profile, retry_count - 1, exclude
-            )
-        raise DownloadFailedError(
-            f"Failed to download trailer for {media.title}"
-        )
+            return await download_trailer(media, profile, retry_count - 1, exclude)
+        raise DownloadFailedError(f"Failed to download trailer for {media.title}")
