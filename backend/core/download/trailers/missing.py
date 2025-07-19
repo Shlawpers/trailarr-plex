@@ -80,8 +80,8 @@ def _process_media_items(
 
         # --- Plex-Pass guard ---
         if _PLEX and _PLEX.has_trailer(db_media.txdb_id):
-            logger.debug(
-                "Plex Pass already provides trailer for '%s' — skipping",
+            logger.info(
+                "Skipped trailer download for %s - Plex Pass already provides trailer.",
                 db_media.title,
             )
             continue
