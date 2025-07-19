@@ -24,6 +24,7 @@ export interface Settings {
   trailer_embed_metadata: boolean;
   trailer_remove_sponsorblocks: boolean;
   trailer_web_optimized: boolean;
+  respect_plex_pass_trailers: boolean;
   trailer_min_duration: number;
   trailer_max_duration: number;
   update_available: boolean;

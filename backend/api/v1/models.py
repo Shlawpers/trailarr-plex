@@ -63,6 +63,7 @@ class Settings(BaseModel):
     trailer_max_duration: int
     trailer_remove_sponsorblocks: bool
     trailer_web_optimized: bool
+    respect_plex_pass_trailers: bool
     update_available: bool
     wait_for_media: bool
     yt_cookies_path: str

@@ -78,8 +78,8 @@ def download_trailer_by_id(
 
     # --- Plex-Pass guard ---
     if _PLEX and _PLEX.has_trailer(media.txdb_id):
-        logger.debug(
-            "Plex Pass already provides trailer for '%s' — skipping",
+        logger.info(
+            "Skipped trailer download for %s - Plex Pass already provides trailer.",
             media.title,
         )
         return f"Plex Pass already provides trailer for '{media.title}'"
@@ -153,8 +153,8 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
             continue
         # --- Plex-Pass guard ---
         if _PLEX and _PLEX.has_trailer(db_media.txdb_id):
-            logger.debug(
-                "Plex Pass already provides trailer for '%s' — skipping",
+            logger.info(
+                "Skipped trailer download for %s - Plex Pass already provides trailer.",
                 db_media.title,
             )
             continue

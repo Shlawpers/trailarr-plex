@@ -277,6 +277,9 @@ class _Config:
             "TRAILER_REMOVE_SILENCE", False
         )
         self.new_download_method = getenv_bool("NEW_DOWNLOAD_METHOD", False)
+        self.respect_plex_pass_trailers = getenv_bool(
+            "RESPECT_PLEX_PASS_TRAILERS", False
+        )
 
     def as_dict(self):
         return {
@@ -318,6 +321,7 @@ class _Config:
                 self.trailer_hardware_acceleration
             ),
             "new_download_method": self.new_download_method,
+            "respect_plex_pass_trailers": self.respect_plex_pass_trailers,
             "update_ytdlp": self.update_ytdlp,
             "url_base": self.url_base,
             "webui_username": self.webui_username,
@@ -640,6 +644,13 @@ class _Config:
     """Flag to enable new download method for yt-dlp and conversion.
         - Default is False.
         - Valid values are True/False"""
+
+    respect_plex_pass_trailers = bool_property(
+        "RESPECT_PLEX_PASS_TRAILERS", default=False
+    )
+    """Skip download if Plex already has a trailer.
+        - Default is False.
+        - Valid values are True/False."""
 
     trailer_remove_silence = bool_property(
         "TRAILER_REMOVE_SILENCE", default=False

@@ -8,7 +8,16 @@ from core.base.database.models.media import MediaRead, MonitorStatus
 from core.base.database.models.trailerprofile import TrailerProfileRead
 from core.download.video_v2 import download_video
 from core.download import trailer_file, trailer_search, video_analysis
+from core.plex_extras import PlexExtras
 from exceptions import DownloadFailedError
+import os
+
+_PLEX = None
+if os.getenv("RESPECT_PLEX_PASS_TRAILERS", "false").lower() == "true":
+    _PLEX = PlexExtras(
+        url=os.getenv("PLEX_URL", "http://plex:32400"),
+        token=os.getenv("PLEX_TOKEN", ""),
+    )
 
 logger = ModuleLogger("TrailersDownloader")
 
@@ -91,6 +100,15 @@ async def download_trailer(
         DownloadFailedError: If trailer download fails.
     """
     logger.info(f"Downloading trailer for {media.title} [{media.id}]")
+
+    # --- Plex-Pass guard ---
+    if _PLEX and _PLEX.has_trailer(media.txdb_id):
+        logger.info(
+            "Skipped trailer download for %s - Plex Pass already provides trailer.",
+            media.title,
+        )
+        return True
+    # -----------------------
     if not exclude:
         exclude = []
 

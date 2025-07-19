@@ -40,6 +40,7 @@ Discord: [https://discord.gg/KKPr5kQEzQ](https://discord.gg/KKPr5kQEzQ)
 - Follows plex naming conventions. Works with [Plex](https://www.plex.tv/), [Emby](https://emby.media/), [Jellyfin](https://jellyfin.org/), etc.
 - Downloads trailers for trailer id's set in Radarr/Sonarr.
 - Searches for a trailer if not set in Radarr/Sonarr.
+- Optionally skip downloads when Plex Pass already provides a trailer.
 - Option to download desired video as trailer for any movie/series.
 - Converts audio, video and subtitles to desired formats. Hardware Acceleration supported for NVIDIA GPUs.
 - Customizable profiles to manage trailer downloads and processing.
