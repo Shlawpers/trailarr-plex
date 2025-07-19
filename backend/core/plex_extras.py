@@ -37,14 +37,23 @@ class PlexExtras:
         section_name = "Movies" if prefix == "tmdb" else "TV Shows"
         section = self.server.library.section(section_name)
         guid = f"{prefix}://{txdb_id}"
-        item = section.getGuid(guid)
+        try:
+            item = section.getGuid(guid)
+        except plex_exc.NotFound:
+            item = None
         if item is None:
             item = next(iter(section.search(guid=_u.quote(guid, safe=""))), None)
         if item is None and prefix in ("tmdb", "tvdb"):
             alt = "tvdb" if prefix == "tmdb" else "tmdb"
             guid_alt = f"{alt}://{txdb_id}"
-            item = section.getGuid(guid_alt) or \
-                   next(iter(section.search(guid=_u.quote(guid_alt, safe=""))), None)
+            try:
+                item = section.getGuid(guid_alt)
+            except plex_exc.NotFound:
+                item = None
+            if item is None:
+                item = next(
+                    iter(section.search(guid=_u.quote(guid_alt, safe=""))), None
+                )
         if not item:
             log.debug("No Plex items found for %s", txdb_id)
             return False

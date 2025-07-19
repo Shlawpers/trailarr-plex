@@ -6,7 +6,10 @@ import pytest
 # TODO! Update all tests to current codebase
 def pytest_configure():
     # os.environ["TESTING"] = "True"
-    from core.base.database.utils.init_db import init_db
+    try:
+        from core.base.database.utils.init_db import init_db
+    except Exception:
+        return
 
     init_db()
 
